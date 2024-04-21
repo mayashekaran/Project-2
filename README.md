@@ -9,7 +9,7 @@ Project components:
 
               (3) Github pages tab - https://mayashekaran.github.io/
 
-              (4) R Shiny app 
+              (4) R Shiny app - https://4ljex4-maya-kanna.shinyapps.io/Project2/
 
               (5) Prediction of Attrition based on model
 
