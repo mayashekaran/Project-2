@@ -7,7 +7,7 @@ Project components:
               
               (2) RMD file containing code for the project
 
-              (3) Github pages tab
+              (3) Github pages tab - https://mayashekaran.github.io/
 
               (4) R Shiny app 
 
