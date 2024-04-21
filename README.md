@@ -13,4 +13,4 @@ Project components:
 
               (5) Prediction of Attrition based on model
 
-              (6) Prediction of Salary based on model
+              (6) Prediction of Salary based on model - Case2PredictionsChandrashekaran Salary.csv
