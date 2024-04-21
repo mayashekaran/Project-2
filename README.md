@@ -10,6 +10,7 @@ Project components:
               (3) Github pages tab - https://mayashekaran.github.io/
 
               (4) R Shiny app - https://4ljex4-maya-kanna.shinyapps.io/Project2/
+                  CaseStudy2-data.csv (file to upload)
 
               (5) Prediction of Attrition based on model - 
                   Case2PredictionsChandrashekaran Attrition.csv
