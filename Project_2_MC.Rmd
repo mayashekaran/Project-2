@@ -80,6 +80,7 @@ attrition %>% select(Department,Gender,OverTime,JobSatisfaction,RelationshipSati
   geom_point()+labs(title = "Scatterplot of RelationshipSatisfaction Vs. JobSatisfaction by OverTime", x= "Job Satisfaction", y= "Relationship Satisfaction") +
   facet_wrap(~ OverTime)
 
+
 #Question 3b - business travel
 library(ggplot2)
 ggplot(attrition, aes(x = BusinessTravel, fill = Attrition)) +
@@ -98,6 +99,12 @@ library(ggplot2)
 ggplot(attrition, aes(x = MaritalStatus,y = MonthlyIncome,fill = Attrition)) +
   geom_boxplot() +
   labs(x = "MaritalStatus", y = "Monthly Income", title = "Monthly Income by Marital Status")
+
+#Question 3e - Job Satisfaction
+library(ggplot2)
+ggplot(attrition, aes(x = JobRole,y = JobSatisfaction)) +
+  geom_boxplot() +
+  labs(x = "Job role", y = "Job Satisfaction", title = "Job Satisfaction by Job Role")
 
 #draw scatterplot
 library(ggplot2)
