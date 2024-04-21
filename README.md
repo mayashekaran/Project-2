@@ -3,7 +3,7 @@ Case study on Attrition
 
 Project components: 
 
-              (1) Link to presentation video not exceeding 7 minutes
+              (1) Link to presentation video
               
               (2) RMD file containing code for the project
 
