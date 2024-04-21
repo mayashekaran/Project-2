@@ -11,6 +11,6 @@ Project components:
 
               (4) R Shiny app - https://4ljex4-maya-kanna.shinyapps.io/Project2/
 
-              (5) Prediction of Attrition based on model
+              (5) Prediction of Attrition based on model - Case2PredictionsChandrashekaran Attrition.csv
 
               (6) Prediction of Salary based on model - Case2PredictionsChandrashekaran Salary.csv
