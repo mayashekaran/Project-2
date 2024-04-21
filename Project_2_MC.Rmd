@@ -1,0 +1,426 @@
+---
+title: "Project 2 Attrition Case Study"
+author: "MayaC"
+date: "2024-04-20"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(fig.width = 10)  # Set the figure width to 10 inches
+
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r}
+library(tidyverse)
+library(dplyr)
+library(stringr)
+library(ggplot2)
+#connecting to the dataset - employee dataset provided for this project
+#It looks like the Yes/No values of Attrition were changed to -2 and -1 on AWS, so using a local copy
+attrition <- read.csv("https://s3.us-east-2.amazonaws.com/msdsds6306/CaseStudy2-data.csv"
+,header=TRUE, stringsAsFactors = TRUE)
+
+#connecting to the dataset - employee dataset provided for this project
+#attrition <- read.csv(file.choose(),header=TRUE, stringsAsFactors = TRUE)
+
+#connecting to the dataset - employee with no salary data provided for this project
+NoSalary <- read.csv("https://s3.us-east-2.amazonaws.com/msdsds6306/CaseStudy2CompSet%20No%20Salary.csv"
+,header=TRUE, stringsAsFactors = TRUE)
+
+#connecting to the dataset - employee with no salary data provided for this project
+NoAttrition <- read.csv("https://s3.us-east-2.amazonaws.com/msdsds6306/CaseStudy2CompSet%20No%20Attrition.csv"
+,header=TRUE, stringsAsFactors = TRUE)
+
+#create a new column overall satisfaction = median of job involvement, relationship satisfaction and job satisfaction
+NoAttrition$OverallSatisfaction <- median(c(NoAttrition$JobInvolvement,NoAttrition$JobSatisfaction,NoAttrition$RelationshipSatisfaction))
+
+# Create a new column based on the values of "BusinessTravel" - convert to numeric
+NoAttrition$TravelFrequency <- ifelse(NoAttrition$BusinessTravel == "Non-Travel", 3,
+                           ifelse(attrition$BusinessTravel == "Travel_Rarely", 2, 1))
+
+
+#check data
+head(attrition)
+head(NoSalary)
+head(NoAttrition)
+
+summary(attrition)
+
+#create a new column overall satisfaction = median of job involvement, relationship satisfaction and job satisfaction
+attrition$OverallSatisfaction <- median(c(attrition$JobInvolvement,attrition$JobSatisfaction,attrition$RelationshipSatisfaction))
+
+#check data
+head(attrition)
+
+#Question 1 - How many employees are male vs. female?
+# Create a bar plot showing the count of employees by gender
+library(ggplot2)
+ggplot(attrition, aes(x = Gender, fill = Attrition)) +
+  geom_bar() +
+  labs(x = "Gender", y = "Number of Employees", title = "Number of Employees by Gender")
+
+#Question 2 - How many employees are excempt vs. non-exempt?
+# Create a bar plot showing the count of employees by overtime
+library(ggplot2)
+ggplot(attrition, aes(x = OverTime, fill = Attrition)) +
+  geom_bar() +
+  labs(x = "OverTime", y = "Number of Employees", title = "Number of Employees by Exempt Status")
+
+#Question 3 - What is the relationship between job satisfaction and relationship satisfaction?
+#draw scatterplot
+library(ggplot2)
+attrition %>% select(Department,Gender,OverTime,JobSatisfaction,RelationshipSatisfaction,MonthlyIncome) %>%
+  ggplot(aes(x= JobSatisfaction, y= RelationshipSatisfaction,color = Gender))+
+  geom_point()+labs(title = "Scatterplot of RelationshipSatisfaction Vs. JobSatisfaction by OverTime", x= "Job Satisfaction", y= "Relationship Satisfaction") +
+  facet_wrap(~ OverTime)
+
+#Question 3b - business travel
+library(ggplot2)
+ggplot(attrition, aes(x = BusinessTravel, fill = Attrition)) +
+  geom_bar() +
+  labs(x = "Business Travel", y = "Number of Employees", title = "Number of Employees who travel for business") +
+  facet_wrap(~ Department)
+
+#Question 3c - Monthly Income
+library(ggplot2)
+ggplot(attrition, aes(x = JobRole,y = MonthlyIncome,fill = Attrition)) +
+  geom_boxplot() +
+  labs(x = "Job role", y = "Monthly Income", title = "Monthly Income by Job Role")
+
+#Question 3d - Monthly Income
+library(ggplot2)
+ggplot(attrition, aes(x = MaritalStatus,y = MonthlyIncome,fill = Attrition)) +
+  geom_boxplot() +
+  labs(x = "MaritalStatus", y = "Monthly Income", title = "Monthly Income by Marital Status")
+
+#draw scatterplot
+library(ggplot2)
+attrition %>% select(Department,Gender,OverTime,JobSatisfaction,RelationshipSatisfaction,MonthlyIncome) %>%
+  ggplot(aes(x= JobSatisfaction, y= RelationshipSatisfaction,color = OverTime))+
+  geom_point()+labs(title = "Scatterplot of RelationshipSatisfaction Vs. JobSatisfaction by Department", x= "Job Satisfaction", y= "Relationship Satisfaction") +
+  facet_wrap(~ Department)
+
+#Question 4 - What is the relationship between job satisfaction and Monthly Income?
+#draw scatterplot
+library(ggplot2)
+attrition %>% select(Department,Gender,OverTime,JobSatisfaction,RelationshipSatisfaction,MonthlyIncome) %>%
+  ggplot(aes(x= MonthlyIncome , y= JobSatisfaction,color = Gender))+
+  geom_point()+labs(title = "Scatterplot of Job Satisfaction Vs. Monthly Income by overtime", x= "Monthly Income", y= "Job Satisfaction") +
+  facet_wrap(~ OverTime)
+
+#remove columns that only have one value
+attritionfilter <- select(attrition, -Over18,-StandardHours, -EmployeeCount)
+
+#Question 5 - What is the relationship between total working years, percent salary hike?
+#draw scatterplot
+library(ggplot2)
+attritionfilter %>% select(TotalWorkingYears,PercentSalaryHike,PerformanceRating,Attrition) %>%
+  ggplot(aes(x= TotalWorkingYears , y= PercentSalaryHike ,color = PerformanceRating))+
+  geom_point()+labs(title = "Scatterplot of Total Working Years Vs. Percent salary hike with Attrition", x= "Total Working Years", y= "% Salary Hike") +
+  facet_wrap(~ Attrition)
+
+#Question 6 - What is the relationship between total working years, percent salary hike with respect to Attrition?
+#draw scatterplot
+library(ggplot2)
+attritionfilter %>% 
+  select(TotalWorkingYears, PercentSalaryHike, PerformanceRating, Department, Attrition) %>%
+  ggplot(aes(x = TotalWorkingYears, y = PercentSalaryHike, color = Attrition)) +
+  geom_point() +
+  labs(title = "Scatterplot of Total Working Years Vs. Percent salary hike by Department", x = "Total Working Years", y = "% Salary Hike") +
+  scale_color_manual(values = c("No" = "lightblue", "Yes" = "red")) +
+  facet_wrap(~Department)
+#draw scatterplot
+library(ggplot2)
+attritionfilter %>% 
+  select(TotalWorkingYears, PercentSalaryHike, PerformanceRating, Department, JobRole,Attrition) %>%
+  ggplot(aes(x = TotalWorkingYears, y = PercentSalaryHike, color = Attrition)) +
+  geom_point() +
+  labs(title = "Scatterplot of Total Working Years Vs. Percent salary hike by Job Role", x = "Total Working Years", y = "% Salary Hike") +
+  scale_color_manual(values = c("No" = "lightblue", "Yes" = "red")) +
+  facet_wrap(~JobRole)
+
+#Question 7 - What is the relationship between years in the company and years since last promotion with respect to Attrition?
+#draw scatterplot
+library(ggplot2)
+attritionfilter %>% 
+  ggplot(aes(x = YearsAtCompany, y = YearsSinceLastPromotion, color = Attrition)) +
+  geom_point() +
+  labs(title = "Scatterplot of Years at Company vs. Years since last promotion", x = "Years at Company", y = "Years since last promotion") +
+  scale_color_manual(values = c("No" = "blue", "Yes" = "red")) +
+facet_wrap(~Department)
+
+#Question 8
+#test hypothesis that sales roles are more likely to leave the company than other roles
+#Null hypothesis - No difference in attrition rate between Sales and Non-Sales employee group
+# Convert Attrition to numeric
+attrition$AttritionNumeric <- as.numeric(attrition$Attrition) - 1  # Assuming "No" is coded as 0 and "Yes" is coded as 1
+head(attrition)
+
+# Subset the data for the two groups of job roles
+attrition_sales <- subset(attrition, JobRole %in% c("Sales Executive", "Sales Representative"))
+attrition_non_sales <- subset(attrition, !(JobRole %in% c("Sales Executive", "Sales Representative")))
+head(attrition_sales)
+
+# Conduct independent samples t-test
+t_test_result <- t.test(attrition_sales$AttritionNumeric, attrition_non_sales$AttritionNumeric)
+
+# Print the results
+print(t_test_result)
+#he p-value 0.002386 is less than the significance level of 0.05, hence there is strong evidence to reject the null hypothesis and conclude that there is a significant difference in attrition rates between the sales-related job roles group and the other job roles group.
+
+#question 9
+#test hypothesis that research tech roles are more likely to leave the company than other roles
+#Null hypothesis - No difference in attrition rate between research tech and Non-research tech employee group
+# Convert Attrition to numeric
+#attrition$Attrition <- as.numeric(attrition$Attrition) - 1  # Assuming "No" is coded as 0 and "Yes" is coded as 1
+
+# Subset the data for the two groups of job roles
+attrition_retech <- subset(attrition, JobRole %in% c("Laboratory Technician", "Research Scientist"))
+attrition_non_retech <- subset(attrition, !(JobRole %in% c("Laboratory Technician", "Research Scientist")))
+head(attrition_retech)
+
+# Conduct independent samples t-test
+t_test_result2 <- t.test(attrition_retech$AttritionNumeric, attrition_non_retech$AttritionNumeric)
+
+# Print the results
+print(t_test_result2)
+#he p-value 0.07258 is greater than the significance level of 0.05, hence we cannot reject the null hypothesis and conclude that there is no significant difference in attrition rates between the research tech -related job roles group and the other job roles group.
+
+#Question 10
+#test hypothesis that HR roles are more likely to leave the company than other roles
+#Null hypothesis - No difference in attrition rate between HR and Non-HR employee group
+# Convert Attrition to numeric
+#attrition$Attrition <- as.numeric(attrition$Attrition) - 1  # Assuming "No" is coded as 0 and "Yes" is coded as 1
+
+# Subset the data for the two groups of job roles
+attrition_HR <- subset(attrition, JobRole %in% c("Human Resources"))
+attrition_non_HR <- subset(attrition, !(JobRole %in% c("Human Resources")))
+head(attrition_HR)
+
+# Conduct independent samples t-test
+t_test_result3 <- t.test(attrition_HR$AttritionNumeric, attrition_non_HR$AttritionNumeric)
+
+# Print the results
+print(t_test_result3)
+#he p-value 0.4498 is greater than the significance level of 0.05, hence we cannot reject the null hypothesis and conclude that there is no significant difference in attrition rates between the HR job role group and the other job roles group.
+
+
+
+#model for predicting Monthly Income. Which factor impacts it the most?
+library(dplyr)
+
+# Perform linear regression
+lm_model <- lm(MonthlyIncome ~ Age + BusinessTravel + DailyRate + Department + DistanceFromHome +
+                  Education + EducationField + EnvironmentSatisfaction + Gender + HourlyRate +
+                  JobInvolvement + JobLevel + JobRole + JobSatisfaction + MaritalStatus +
+                  MonthlyRate + NumCompaniesWorked + OverTime + PercentSalaryHike +
+                  PerformanceRating + RelationshipSatisfaction + StockOptionLevel +
+                  TotalWorkingYears + TrainingTimesLastYear + WorkLifeBalance +
+                  YearsAtCompany + YearsInCurrentRole + YearsSinceLastPromotion +
+                  YearsWithCurrManager,
+                data = attrition)
+
+# Summary of the regression model
+summary(lm_model)
+confint(lm_model)
+
+# Performing leave one out cross validation
+#Define the SLR model
+slr_model <- function(attrition, fold_index) {
+  # Fit SLR model
+  fit <- lm(MonthlyIncome ~ Age + BusinessTravel + DailyRate + Department + DistanceFromHome +
+                  Education + EducationField + EnvironmentSatisfaction + Gender + HourlyRate +
+                  JobInvolvement + JobLevel + JobRole + JobSatisfaction + MaritalStatus +
+                  MonthlyRate + NumCompaniesWorked + OverTime + PercentSalaryHike +
+                  PerformanceRating + RelationshipSatisfaction + StockOptionLevel +
+                  TotalWorkingYears + TrainingTimesLastYear + WorkLifeBalance +
+                  YearsAtCompany + YearsInCurrentRole + YearsSinceLastPromotion +
+                  YearsWithCurrManager,
+                 data = attrition[-fold_index, ])
+  # Predict for the left-out observation
+  pred <- predict(fit, newdata = attrition[fold_index, ])
+  return(pred)
+}
+
+# Perform leave-one-out cross-validation
+n <- nrow(attrition)
+predictions <- numeric(n)
+
+for (i in 1:n) {
+  predictions[i] <- slr_model(attrition, i)
+}
+
+# Calculate performance metrics. For example, mean squared error
+actual_values <- attrition$MonthlyIncome
+mse1 <- mean((actual_values - predictions)^2)
+rmse1 = sqrt(mse1)
+AIC <- AIC(lm_model)
+BIC <- BIC(lm_model)
+print(paste("Mean Squared Error:", mse1))
+print(paste("Root Mean Squared Error:", rmse1))
+print(paste("AIC:", AIC))
+print(paste("BIC:", BIC))
+
+#Apply the regression model for No Salary data
+predicted_income <- predict(lm_model, newdata = NoSalary)
+
+#Append predicted values to the NoSalary
+NoSalary$PredictedMonthlyIncome <- predicted_income
+
+#checkdata
+head(NoSalary)
+
+# Write the file to CSV
+write.csv(NoSalary, "Case2PredictionsChandrashekaran Salary.csv", row.names = FALSE)
+
+
+
+
+
+#predicting attrition #1 - straight up knn using all data
+#predicting attrition #2 - Undersampling
+#predicting attrition #3 - Oversampling
+
+#predicting attrition #1 - straight up knn using all data
+#training and test datasets - knn classification
+library(class)
+library(caret)
+library(e1071)
+library(dplyr)
+
+
+# create new dataframe with relevant columns
+attritionclassifier <- select(attrition, Attrition, BusinessTravel,DistanceFromHome,JobInvolvement, NumCompaniesWorked, OverallSatisfaction)
+# Create a new column based on the values of "BusinessTravel" - convert to numeric
+attritionclassifier$TravelFrequency <- ifelse(attritionclassifier$BusinessTravel == "Non-Travel", 3,
+                           ifelse(attritionclassifier$BusinessTravel == "Travel_Rarely", 2, 1))
+
+#check data
+head(attritionclassifier)
+
+#training and test set
+set.seed(6)
+splitPerc = .7
+trainIndices = sample(1:dim(attritionclassifier)[1],round(splitPerc * dim(attritionclassifier)[1]))
+train = attritionclassifier[trainIndices,]
+test = attritionclassifier[-trainIndices,]
+#check data
+nrow(train)
+nrow(test)
+nrow(attritionclassifier)
+ncol(attritionclassifier)
+# k = 7
+classifications = knn(train[,c(3,4,7)],test[,c(3,4,7)],train$Attrition, prob = TRUE, k = 7)
+table(classifications,test$Attrition)
+confusionMatrix(table(classifications,test$Attrition), mode = "everything")
+
+
+#trying naive bayes
+#Train a NB model based on the training set using ABV and IBU. 
+model = naiveBayes(train[,c(3,4,7)],train$Attrition)
+#Use the model to predict the Type in the test set and use those results to evaluate the model based on accuracy, sensitivity and specificity. 
+table(predict(model,test[,c(3,4,7)]),test$Attrition)
+confusionMatrix(table(predict(model,test[,c(3,4,7)]),test$Attrition), mode = "everything")
+
+#predicting attrition #3 - Undersampling
+# Filter "Yes" cases and randomly sample "No" cases to match the "Yes" cases, creating an Under sampled dataset
+OnlyY <- attritionclassifier %>% filter(Attrition == "Yes")
+numYes <- nrow(OnlyY)  # Get the count of "Yes" observations
+OnlyN <- attritionclassifier %>% filter(Attrition == "No")
+numNo <- nrow(OnlyN)
+dim(OnlyY)
+dim(OnlyN)
+
+# Sample from OnlyN to match the number of "Yes" cases
+UnderSamp <- rbind(OnlyY, OnlyN[sample(seq_len(nrow(OnlyN)), numYes, replace = TRUE),])
+
+# Display dimensions of the undersampled dataset
+dim(UnderSamp)
+head(UnderSamp)
+
+# Classify using the underampled dataset
+classifications = knn(UnderSamp[,3:7], attritionclassifier[3:7], UnderSamp[,1], prob = TRUE, k = 3)
+# Tabulate and assess the predictions
+table(classifications, attritionclassifier[,1])
+# Calculate the confusion matrix for the undersampled data
+CM = confusionMatrix(table(classifications, attritionclassifier[,1]), mode = "everything")
+CM
+
+# Adjust reference levels for positive class identification and calculate F1 scores
+attritionclassifier$Attrition = relevel(attritionclassifier$Attrition, ref = "Yes")
+UnderSamp$Attrition = relevel(UnderSamp$Attrition, ref = "Yes")
+classifications = knn(UnderSamp[,3:7], attritionclassifier[3:7], UnderSamp[,1], prob = TRUE, k = 3)
+CM_Y = confusionMatrix(table(classifications, attritionclassifier[,1]), mode = "everything")
+CM_Y
+
+# Adjust reference level for the negative class and calculate F1 scores
+attritionclassifier$Attrition = relevel(attritionclassifier$Attrition, ref = "No")
+UnderSamp$Attrition = relevel(UnderSamp$Attrition, ref = "No")
+classifications = knn(UnderSamp[,3:7], attritionclassifier[3:7], UnderSamp[,1], prob = TRUE, k = 3)
+CM_N = confusionMatrix(table(classifications, attritionclassifier[,1]), mode = "everything")
+CM_N
+
+# Calculate the macro-average F1 score for the Undersampled dataset
+Macro_F1_Under = mean(c(CM_Y[4]$byClass["F1"], CM_N[4]$byClass["F1"]))
+Macro_F1_Under
+
+#OVERSAMPLING
+# Filter "Yes" cases and resample them to match the number of "No" cases, creating an oversampled dataset
+
+OverSamp = rbind(OnlyN, OnlyY[sample(seq(1, numYes, 1), numNo, replace = TRUE),])
+# Display dimensions of the oversampled dataset
+dim(OverSamp)
+
+# Classify using the oversampled dataset
+classifications = knn(OverSamp[,3:7], attritionclassifier[3:7], OverSamp[,1], prob = TRUE, k = 3)
+# Tabulate and assess the predictions
+table(classifications, attritionclassifier[,1])
+# Calculate the confusion matrix for the oversampled data
+CM = confusionMatrix(table(classifications, attritionclassifier[,1]), mode = "everything")
+CM
+
+# Adjust reference levels for positive class identification and calculate F1 scores
+attritionclassifier$Attrition = relevel(attritionclassifier$Attrition, ref = "Yes")
+OverSamp$Attrition = relevel(OverSamp$Attrition, ref = "Yes")
+classifications = knn(OverSamp[,3:7], attritionclassifier[3:7], OverSamp[,1], prob = TRUE, k = 3)
+CM_Y = confusionMatrix(table(classifications, attritionclassifier[,1]), mode = "everything")
+CM_Y
+
+# Adjust reference level for the negative class and calculate F1 scores
+attritionclassifier$Attrition = relevel(attritionclassifier$Attrition, ref = "No")
+OverSamp$Attrition = relevel(OverSamp$Attrition, ref = "No")
+classifications = knn(OverSamp[,3:7], attritionclassifier[3:7], OverSamp[,1], prob = TRUE, k = 3)
+CM_N = confusionMatrix(table(classifications, attritionclassifier[,1]), mode = "everything")
+CM_N
+
+# Calculate the macro-average F1 score for the oversampled dataset
+Macro_F1_Over = mean(c(CM_Y[4]$byClass["F1"], CM_N[4]$byClass["F1"]))
+Macro_F1_Over
+
+#RESULTS
+# Print all Macro F1 scores to compare different approaches
+#Macro_F1_Base
+#Macro_F1_New_Thresh
+Macro_F1_Under
+Macro_F1_Over
+
+
+#Use Oversampling knn model to predict the attrition of the file that has no actual values
+# Classify using the oversampled dataset
+classifications <- knn(OverSamp[, 3:7], NoAttrition[, c(6, 14, 21, 36, 37)], OverSamp[, 1], prob = TRUE, k = 3)
+# add column to dataframe
+NoAttrition$Attrition <- classifications
+#check data
+head(NoAttrition)
+
+# Write the file to CSV
+write.csv(NoAttrition, "Case2PredictionsChandrashekaran Attrition.csv", row.names = FALSE)
+
+```
+
