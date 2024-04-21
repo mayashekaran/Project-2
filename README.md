@@ -5,7 +5,7 @@ Project components:
 
               (1) Link to presentation video
               
-              (2) RMD file containing code for the project
+              (2) RMD file containing code for the project - Project_2_MC.Rmd
 
               (3) Github pages tab - https://mayashekaran.github.io/
 
