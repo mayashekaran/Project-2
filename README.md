@@ -3,7 +3,8 @@ Case study on Attrition
 
 Project components: 
 
-              (1) Link to presentation video
+              (1) Link to presentation video - 
+              https://smu-2u-com.zoom.us/rec/play/vM3q80GS9hz62lM2f4DXjHfWFrQVYE2J3voOJJ7e38Dw_Om4CPuK5u3U-j455ylaOi49Qw1wHqmTzsCa.e8ZHbxNYl1Nrn2Nq
               
               (2) RMD file containing code for the project - Project_2_MC.Rmd
 
